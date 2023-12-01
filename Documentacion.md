@@ -26,7 +26,7 @@ Desde el equipo **Casa** nos conectaremos al equipo **Servidor** mediante una co
 
 Desde el equipo de **Casa** ejecutamos el siguiente comando:
 
-```bach
+```bash
 ls -la .ssh
 cd ~/.ssh
 ssh -p 22 -i clave_trabajo sergio@10.0.2.8
@@ -42,7 +42,7 @@ Resultado:
 
 2. Instalar proftpd:
 
-```bach
+```bash
 sudo apt update
 sudo apt install proftpd
 ```
@@ -53,7 +53,7 @@ Resultado:
 
 3. Realizar algunos cambios en el archivo de configuración:
 
-```bach
+```bash
 sudo nano /etc/proftpd/proftpd.conf
 ```
 
@@ -74,7 +74,7 @@ Guardamos los cambios.
 
 4. Comprobar estado del servicio proftpd:
 
-```bach
+```bash
 sudo systemctl status proftpd
 ```
 
@@ -86,7 +86,7 @@ Podemos comprobar que el servicio está activo.
 
 5. Con los siguientes comandos lo activaremos para que se inicie al arrancar el servidor y lo iniciaremos:
 
-```bach
+```bash
 sudo systemctl enable proftpd
 sudo systemctl start proftpd
 ```
@@ -106,7 +106,7 @@ Resultado:
 
 6. Reglas firewall:
 
-```bach
+```bash
 sudo ufw enable
 sudo ufw allow 20/tcp
 sudo ufw allow 21/tcp
@@ -121,7 +121,7 @@ Resultado:
 
 Si no tengo instalada esta utilidad, la instalaré con: ``sudo apt install nmap``. Esta comprobación también se puede hacer desde el propio servidor, pero es menos fiable que desde otro equipo ya que puede conectarse por localhost.
 
-```bach
+```bash
 exit
 sudo apt install nmap
 nmap 10.0.2.8 -p 1-1024
@@ -135,7 +135,7 @@ Resultado:
 
 > Para evitar problemas con el firewall en todo momento utilizaremos el modo de transferencia 'activo'. Este modo utiliza unicamente los puertos 20 y 21 del servidor.
 
-```bach
+```bash
 ftp -A 10.0.2.8
 ls
 ```
@@ -146,7 +146,7 @@ Resultado:
 
 9. Comprobar en el equipo **Servidor** qué conexiones están establecidas con otros equipos:
 
-```bach
+```bash
 ssh -p 22 -i clave_trabajo sergio@10.0.2.8
 ss |grep tcp
 ```
@@ -157,7 +157,7 @@ Resultado:
 
 10. Instalar el cliente gráfico **Filezilla** en el equipo **Casa**. Crea una nueva conexión en el **Gestor de sitios**. Conectarse al equipo **Servidor** con el protocolo FTP y cifrado FTP plano. Recuerda conectar el modo **activo** en la pestaña **Opciones de transferencia** del Gestor de sitios.
 
-```bach
+```bash
 exit
 sudo apt install filezilla
 ```
@@ -191,7 +191,7 @@ Conexión establecida:
 
 Cambiamos al equipo "**Servidor**". Vamos a la terminal y ejecutamos el siguiente comando:
 
-```bach
+```bash
 sudo nano /etc/proftpd/proftpd.conf
 ```
 
@@ -205,7 +205,7 @@ Guardamos los cambios realizados.
 
 2. Reiniciaremos el servicio ``proftpd``:
 
-```bach
+```bash
 sudo systemctl restart proftpd
 ```
 
@@ -213,7 +213,7 @@ sudo systemctl restart proftpd
 
 3. Puedes probar que los archivos de configuración son correctos con el siguiente comando:
 
-```bach
+```bash
 sudo /usr/sbin/proftpd --configtest -c /etc/proftpd/proftpd.conf
 ```
 
@@ -227,7 +227,7 @@ Vamos a realizarlo desde el terminal de la siguiente manera:
 
 Primero nos cambiamos al equipo "**Carmen**". Y ejecutamos los siguientes comandos para intentar acceder al equipo "**Servidor**" de forma anónima:
 
-```bach
+```bash
 ftp -A 10.0.2.8
 ls
 ```
@@ -238,7 +238,7 @@ Como usuario insertamos "**anonymous**", y sin contraseña y le damos a enter.
 
 Ahora hacemos lo mismo pero con el usuario "**ftp**", ejecutamos los siguientes comandos:
 
-```bach
+```bash
 ftp -A 10.0.2.8
 ls
 ```
@@ -273,14 +273,330 @@ Estos serían los sitios que tenemos creados en total hasta ahora:
 
 ![Sitios en "Filezilla"](./img/28_ftp.png)
 
-5. Si queremos que el usuario anónimo tenga una carpeta diferente, tenemos que crear dicha carpeta, por ejemplo:
+5. Si queremos que el usuario anónimo tenga una carpeta diferente, tenemos que crear dicha carpeta.
 
-```bach
+Cambiamos al equipo "**Servidor**" y ejecutamos los comandos,
+
+```bash
 sudo mkdir -p /var/ftp/anonimo
 sudo chown ftp:nogroup /var/ftp/anonimo
 ```
 
-E indicarlo en el fichero de configuración, cambiando la etiqueta ``<Anonymous ~ftp>`` por ``<Anonymous /nombre-de-carpeta>``. Por ejemplo: ``<Anonymous /var/ftp/anonimo>``.
+Resultado:
+
+![Cambiar de carpeta al usuario anónimo](./img/29_ftp.png)
+
+6. Después debes indicarlo en el fichero de configuración, cambiando la etiqueta ``<Anonymous ~ftp>`` por ``<Anonymous /nombre-de-carpeta>``. Por ejemplo: ``<Anonymous /var/ftp/anonimo>``.
+
+Para ello, ejecutamos el siguiente comando y realizamos lo que nos pide:
+
+```bash
+sudo nano /etc/proftpd/proftpd.conf
+```
+
+![Cambio la etiqueta "<Anonumous ~ftp>" por "<Anonymous /nombre-de-carpeta>"](./img/30_ftp.png)
+
+7. Para saber que estamos en esta nueva carpeta, le vamos a crear un fichero dentro:
+
+> Otra opción sería crear/modificar el archivo ``welcome.msg`` que nos indica la directiva ``DisplayLogin``.
+
+![Creo un fichero dentro de la nueva carpeta del usuario anónimo](./img/31_ftp.png)
+
+8. Recuerda reinicia el servicio ``proftpd``:
+
+```bash
+sudo systemctl restart proftpd
+```
+
+![Reinicio el servicio "proftpd"](./img/32_ftp.png)
+
+9. Puedes probar que los archivos de configuración son correctos con el siguiente comando:
+
+```bash
+sudo /usr/sbin/proftpd --configtest -c /etc/proftpd/proftpd.conf
+```
+
+![Compruebo que los archivos de configuración son correctos](./img/33_ftp.png)
+
+10. Vuelve a probar a acceder al servidor usando los usuarios: anonymous y ftp. Tanto desde el teminal como desde la aplicación gráfica filezilla. Esta vez debe aparecer el nuevo directorio de trabajo.
+
+Vamos a realizarlo desde el terminal de la siguiente manera:
+
+Primero nos cambiamos al equipo "**Carmen**". Y ejecutamos los siguientes comandos para intentar acceder al equipo "**Servidor**" de forma anónima:
+
+```bash
+ftp -A 10.0.2.8
+ls
+```
+
+Como usuario insertamos "**anonymous**", y sin contraseña y le damos a enter.
+
+![Accedo al "Servidor" desde la terminal de forma anónima con el usuario "anonymous"](./img/34_ftp.png)
+
+Ahora hacemos lo mismo pero con el usuario "**ftp**", ejecutamos los siguientes comandos:
+
+```bash
+ftp -A 10.0.2.8
+ls
+```
+
+Como usuario insertamos "**ftp**", y sin contraseña y le damos a enter.
+
+![Accedo al "Servidor" desde la terminal de forma anónima con el usuario "ftp"](./img/35_ftp.png)
+
+Ahora vamos a realizarlo desde el cliente gráfico de "**Filezilla**" de la siguiente forma:
+
+Establezco conexión con el usuario anónimo "anonymous":
+
+![Conecto con el "Servidor" desde "Filezilla" de forma anónima con el usuario "anonymous"](./img/36_ftp.png)
+
+Y ahora establezco conexión con el usuario anónimo "ftp":
+
+![Conecto con el "Servidor" desde "Filezilla" de forma anónima con el usuario "ftp"](./img/37_ftp.png)
+
+## Configuración de usuarios virtuales
+
+Los usuarios virtuales son aquellos que no son usuarios de sistema pero si tienen acceso a algunos recursos a través del servicio FTP. Los crearemos usando el comando ``ftpasswd``. Los usuarios y las contraseñas se almacenan en un fichero que vamos a crear en ``/etc/proftpd/ftpd.passwd``:
+
+1. Primero vamos a crear las carpetas de trabajo que le vamos a asignar a cada usuario virtual:
+
+```bash
+sudo mkdir /var/ftp/ftp01
+sudo mkdir /var/ftp/ftp02
+sudo chown ftp:nogroup /var/ftp/ftp01 /var/ftp/ftp02
+```
+
+Nos conectamos desde "**Carmen**" al equipo "**Servidor**" y ejecutamos los comandos:
+
+![Creo las carpetas de trabajo y se lo asigno a cada usuario virtual](./img/38_ftp.png)
+
+2. Ahora nos situamos en el directorio de configuración de ``proftpd`` y creamos un archivo vacío para generar los usuario virtuales.
+
+```bash
+cd /etc/proftpd/
+sudo touch ftpd.passwd
+ls
+```
+
+![Me sitúo en el directorio de configuración y creo un archivo vacío para generar los usuarios virtuales](./img/39_ftp.png)
+
+3. Después creamos los usuario virtuales ejecutando el comando ``ftpasswd``:
+
+```bash
+sudo ftpasswd --passwd --name=ftp01 --uid=3001 --gid=3001 --home=/var/ftp/ftp01 --shell=/bin/false
+
+sudo ftpasswd --passwd --name=ftp02 --uid=3002 --gid=3002 --
+home=/var/ftp/ftp02 --shell=/bin/false
+```
+
+Nos pedirá que introduzcamos la contraseña de los usuarios virtuales, yo le asignaré "**ftp01**" al primer usuario virtual y "**ftp02**" para el segundo usuario virtual.
+
+![Creo los usuarios virtuales y le asigno una contraseña](./img/40_ftp.png)
+
+4. Para saber que estamos en nuestra carpeta, le vamos a crear un fichero dentro de cada una:
+
+```bash
+sudo touch /var/ftp/ftp01/soyusuario1.txt
+sudo touch /var/ftp/ftp02/soyusuario2.txt
+```
+
+> Otra opción sería crear en dicha carpeta un archivo ``.message`` tal como se indica en la directiva ``DisplayChdir`` del archivo de configuración.
+
+![Creo ficheros dentro de cada carpeta](./img/41_ftp.png)
+
+5. A continuación necesimos modificar el archivo de configuración:
+
+```bash
+sudo nano /etc/proftpd/proftpd.conf
+```
+
+Descomentamos las líneas:
+
+```bash
+DefaultRoot ~
+RequireValidShell off
+```
+
+> Revisad que haya un espacio entre la directiva y el valor. Si no os dará un error.
+
+![Descomento las líneas del archivo de configuración](./img/42_ftp.png)
+
+Y al final del archivo incluimos la siguiente directiva:
+
+```bash
+AuthUserFile /etc/proftpd/ftpd.passwd
+```
+
+![Incluyo la directiva al final del archivo](./img/43_ftp.png)
+
+6. Guardamos y reiniciamos el servicio ``proftpd``:
+
+```bash
+sudo systemctl restart proftpd
+```
+
+![Guardo y reinicio el servicio "proftpd"](./img/44_ftp.png)
+
+7. Puedes probar que los archivos de configuración son correctos con el siguiente comando:
+
+```bash
+sudo /usr/sbin/proftpd --configtest -c /etc/proftpd/proftpd.conf
+```
+
+![Compruebo que los archivos de configuración son correctos](./img/45_ftp.png)
+
+8. Vuelve a probar a acceder al servidor usando los usuarios virtuales, tanto desde el teminal como desde la aplicación gráfica filezilla. Debe aparecer el archivo correspondiente de su directorio de trabajo.
+
+Vamos a realizarlo desde el terminal de la siguiente manera:
+
+Primero nos cambiamos al equipo "**Carmen**". Y ejecutamos los siguientes comandos para intentar acceder al equipo "**Servidor**" de forma anónima:
+
+```bash
+ftp -A 10.0.2.8
+ls
+```
+
+Como usuario insertamos "**ftp01**", y la contraseña "**ftp01**" y le damos a enter.
+
+![Accedo al "Servidor" desde la terminal de forma anónima con el usuario "ftp01"](./img/46_ftp.png)
+
+Ahora hacemos lo mismo pero con el usuario "**ftp02**", ejecutamos los siguientes comandos:
+
+```bash
+ftp -A 10.0.2.8
+ls
+```
+
+Como usuario insertamos "**ftp**", y la contraseña "**ftp02**" y le damos a enter.
+
+![Accedo al "Servidor" desde la terminal de forma anónima con el usuario "ftp02"](./img/47_ftp.png)
+
+Ahora vamos a realizarlo desde el cliente gráfico de "**Filezilla**" de la siguiente forma:
+
+Creo los 2 sitios para cada usuario virtual que tenemos.
+
+Para el usuario virtual "**ftp01**" haremos lo siguiente:
+
+Establezco conexión con el usuario virtual "ftp01". Establezco como la última vez todas las opciones pero esta vez cambiamos el modo de acceso a modo "**Normal**":
+
+![Accedo al "Servidor" desde "Filezilla" de forma anónima con el usuario "ftp01"](./img/48_ftp.png)
+
+Insertamos el usuario "**ftp01**" y la contraseña "**ftp01**". Y nos intentamos conectar:
+
+![Conecto con el "Servidor" desde "Filezilla" de forma anónima con el usuario "ftp01"](./img/49_ftp.png)
+
+Ahora hacemos lo mismo pero con el usuario virtual "**ftp02**":
+
+![Accedo al "Servidor" desde "Filezilla" de forma anónima con el usuario "ftp02"](./img/50_ftp.png)
+
+Y nos intentamos conectar:
+
+![Conecto con el "Servidor" desde "Filezilla" de forma anónima con el usuario "ftp02"](./img/51_ftp.png)
+
+Estos serían los sitios que tenemos creados en total hasta ahora:
+
+![Sitios en "Filezilla" actualizados con los usuarios virtuales](./img/52_ftp.png)
+
+## Configuración de FTPS. FTP con TLS/SSL
+1. Para utilizar una conexión segura primero debemos instalar en el servidor el paquete para hacer funcionar el módulo de criptografía en proftpd.
+
+```bash
+sudo apt install proftpd-mod-crypto
+```
+
+Vamos al equipo "**Servidor**" y ejecutamos los comandos, nos saldrá lo siguiente:
+
+![Instalo el paquete de módulo de criptografía en proftpd](./img/53_ftp.png)
+
+2. Ahora debemos activar dicho paquete en el archivo de configuración:
+``/etc/proftpd/modules.conf``. Descomentar la directiva: ``LoadModule mod_tls.c``
+
+```bash
+sudo nano /etc/proftpd/modules.conf
+```
+
+Vamos al archivo de configuración y descomentamos la directiva propuesta en la actividad:
+
+![Descomento la directiva desde el archivo de configuración](./img/54_ftp.png)
+
+Guardo todos los cambios y salgo del archivo de configuración.
+
+3. A continuación debemos instalar el paquete openssl para generar un certificado autofirmado.
+
+```bash
+sudo apt install openssl
+```
+
+![Descomento la directiva desde el archivo de configuración](./img/55_ftp.png)
+
+4. Una vez instalado vamos a generar una ``clave RSA`` de ``2048 bit``. Guardaremos la clave privada en el directorio ``/etc/ssl/private/proftpd.key`` y la clave pública en ``/etc/ssl/certs/proftpd.crt``. Le daremos una caducidad de 365 días.
+
+```bash
+sudo openssl req -x509 -newkey rsa:2048 -sha256 -keyout 
+/etc/ssl/private/proftpd.key -out /etc/ssl/certs/proftpd.crt -nodes -days 365
+```
+
+Al crear el certificado nos pedirá cierta información que tendremos que ir rellenando.
+
+![Genero una "clave RSA" y guardo cada clave](./img/56_ftp.png)
+
+Ponemos los permisos adecuados a estos certificados:
+
+```bash
+sudo chmod 600 /etc/ssl/private/proftpd.key
+sudo chmod 600 /etc/ssl/certs/proftpd.crt
+```
+
+![Le asigno permisos adecuados a los certificados](./img/57_ftp.png)
+
+5. A continuación debemos incluir el archivo ``tls.conf`` en el archivo de configuración ``proftpd.conf``. Editamos el archivo de configuración: ``/etc/proftpd/proftpd.conf``. Descomentar la línea: ``Include /etc/proftpd/tls.conf``
+
+```bash
+sudo nano /etc/proftpd/proftpd.conf
+```
+
+![Descomento la línea solicitada en el archivo de configuración "proftpd.conf"](./img/58_ftp.png)
+
+6. Ahora abrimos el archivo de configuración de TLS ``/etc/proftpd/tls.conf`` y descomentamos las siguientes líneas:
+
+```bash
+sudo nano /etc/proftpd/tls.conf
+```
+
+![Descomento la línea solicitada en el archivo de configuración "tls.conf"](./img/59_ftp.png)
+
+![Descomento la línea solicitada en el archivo de configuración "tls.conf"](./img/60_ftp.png)
+
+Con la directiva ``TLSRequired on`` establecemos que toda la comunicación con el servidor debe ser segura.
+
+7. Reiniciamos el servicio ``proftpd``:
+
+```bash
+sudo systemctl restart proftpd
+```
+
+![Reinicio el servicio "proftpd"](./img/61_ftp.png)
+
+8. Puedes probar que los archivos de configuración son correctos con el siguiente comando:
+
+```bash
+sudo /usr/sbin/proftpd --configtest -c /etc/proftpd/proftpd.conf
+```
+
+![Compruebo que los archivos de configuración son correctos](./img/62_ftp.png)
+
+9. Puedes probar que se establece la comunicación TLS entre el cliente **Casa** y el **Servidor** ejecutando el siguiente comando desde un terminal del equipo **Casa**:
+
+```bash
+sudo openssl s_client -connect 10.0.2.8:21 -starttls ftp
+```
+
+![Pruebo que se ha establecido la comunicación TLS entre "Casa" y "Servidor"](./img/63_ftp.png)
+
+10. Vuelve a probar a acceder al servidor usando la conexión segura. Primero con la aplicación gráfica filezilla. Crea una nueva conexión en el gestor de sitios con el protocolo FTP y el cifrado 'Requiere FTP explícito sobre TLS'. Recuerda activar el modo de transferencia activa en la pestaña 'Opciones de transferencia'
+
+Nos dirigimos a "**Filezilla**", creamos el sitio nuevo y establecemos la configuración que nos ha pedido en la actividad:
+
 
 
 
