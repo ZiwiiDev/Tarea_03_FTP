@@ -593,22 +593,67 @@ sudo openssl s_client -connect 10.0.2.8:21 -starttls ftp
 
 ![Pruebo que se ha establecido la comunicación TLS entre "Casa" y "Servidor"](./img/63_ftp.png)
 
+![Pruebo que se ha establecido la comunicación TLS entre "Casa" y "Servidor"](./img/64_ftp.png)
+
+![Pruebo que se ha establecido la comunicación TLS entre "Casa" y "Servidor"](./img/65_ftp.png)
+
+Me sale mucho texto diciendo que se conecta correctamente.
+
 10. Vuelve a probar a acceder al servidor usando la conexión segura. Primero con la aplicación gráfica filezilla. Crea una nueva conexión en el gestor de sitios con el protocolo FTP y el cifrado 'Requiere FTP explícito sobre TLS'. Recuerda activar el modo de transferencia activa en la pestaña 'Opciones de transferencia'
 
-Nos dirigimos a "**Filezilla**", creamos el sitio nuevo y establecemos la configuración que nos ha pedido en la actividad:
+Nos dirigimos a "**Filezilla**", creamos el sitio nuevo y establecemos la configuración que nos ha pedido en la actividad. Creo una nueva conexión en el gestor de sitios con el protocolo FTP y el cifrado 'Requiere FTP explícito sobre TLS':
 
+![Pruebo que se ha establecido la comunicación TLS desde "Filezilla"](./img/66_ftp.png)
 
+![Pruebo que se ha establecido la comunicación TLS desde "Filezilla"](./img/67_ftp.png)
 
+Me aparece esta pestaña:
 
+![Pruebo que se ha establecido la comunicación TLS desde "Filezilla"](./img/68_ftp.png)
 
+Y se realiza la conexión correctamente:
 
+![Pruebo que se ha establecido la comunicación TLS desde "Filezilla"](./img/69_ftp.png)
 
+11. Para probar con el terminal debemos instalarnos un nuevo paquete ya que el comando básico ``ftp`` no permite certificados. Instala en el equipo **Casa** el paquete ``lftp``:
 
+```bash
+exit
+sudo apt install lftp
+```
 
+Nos cambiamos al equipo **Casa** y ejecutamos el comando.
 
+![Pruebo que se ha establecido la comunicación TLS entre "Casa" y "Servidor"](./img/70_ftp.png)
 
+12. Ahora configura el comando ``lftp`` creando un archivo de configuración ``nano ~/.lftprc`` con el siguiente contenido:
 
-5. A continuación debemos incluir el archivo tls.conf en el archivo proftpd.conf. Editamos el
-archivo de configuración: /etc/proftpd/proftpd.conf. Descomentar la línea: Include
-/etc/proftpd/tls.conf
+```bash
+set ftp:passive-mode off
+set ftp:ssl-auth TLS
+set ftp:ssl-force true
+set ftp:ssl-protect-list yes
+set ftp:ssl-protect-data yes
+set ftp:ssl-protect-fxp yes
+set ssl:verify-certificate no
+```
 
+Configuramos: el modo de transferencia en activo, forzamos el uso de ssl y la autentificación con TLS. Además como nuestro certificado en autofirmado establecemos que no se verifique el certificado.
+
+Resultado:
+
+![Configuro el comando "lftp" creando un archivo de configuración](./img/71_ftp.png)
+
+![Configuro el comando "lftp" creando un archivo de configuración](./img/72_ftp.png)
+
+13. Prueba a acceder desde el terminal con:
+
+```bash
+lftp sergio@10.0.2.8
+```
+
+Resultado:
+
+![Conectarme con lftp al "Servidor"](./img/73_ftp.png)
+
+## Oliver Fabian Stetcu Stepanov
