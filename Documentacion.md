@@ -650,9 +650,10 @@ Resultado:
 
 ```bash
 lftp sergio@10.0.2.8
+ls
 ```
 
-Resultado:
+Inserto la contraseña **"sergio"** y le doy a enter.
 
 ![Conectarme con lftp al "Servidor"](./img/73_ftp.png)
 
